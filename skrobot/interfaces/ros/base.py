@@ -544,6 +544,9 @@ class ROSRobotInterfaceBase(object):
             time = times[i_step]
             time = self._check_time(time, fastest_time, time_scale=time_scale)
 
+            if i_step == 0 or i_step == total_steps - 1:
+                time += 0.1  # safety for torque limit
+
             vel = np.zeros_like(prev_av)
             if i_step != total_steps - 1:
                 next_time = times[i_step + 1]
@@ -561,6 +564,16 @@ class ROSRobotInterfaceBase(object):
             traj_points.append((av, vel, time + next_start_time))
             next_start_time += time
             prev_av = av
+
+        # filter non incremental start time
+        traj_points_filtered = [traj_points[0]]
+        for traj_point in traj_points[1:]:
+            if (traj_points_filtered[-1][1].sum() == 0
+                    and traj_point[1].sum() == 0):
+                continue
+            if traj_point[2] != traj_points_filtered[-1][2]:
+                traj_points_filtered.append(traj_point)
+        traj_points = traj_points_filtered
 
         cacts = self.controller_table[controller_type]
         controller_params = self.controller_param_table[controller_type]
