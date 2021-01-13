@@ -1717,8 +1717,9 @@ class RobotModel(CascadedLink):
         for urdf_link in self.urdf_robot_model.links:
             link = Link(name=urdf_link.name)
             link.collision_mesh = urdf_link.collision_mesh
-            link.visual_mesh = self._meshes_from_urdf_visuals(
-                urdf_link.visuals)
+            link.visual_mesh = link.collision_mesh
+            # link.visual_mesh = self._meshes_from_urdf_visuals(
+            #     urdf_link.visuals)
             links.append(link)
         link_maps = {l.name: l for l in links}
 
